@@ -29,7 +29,6 @@ namespace MaintenanceSchedule.Core.Queries.Vienauto
             try
             {
                 var result = new GetModelListQueryResponse();
-                var cache = new CacheProvider<GetModelListQueryRequest, GetModelListQueryResponse>();
                 Func<GetModelListQueryRequest, GetModelListQueryResponse> getModel = GetModelByManufacturerFromDB;
                 result = _cacheProvider.Fetch(request.ManufacturerId.ToString(), request, getModel, DateTime.Now.AddHours(4), null);
                 return result;

@@ -29,7 +29,6 @@ namespace MaintenanceSchedule.Core.Queries.Vienauto
             try
             {
                 var result = new GetAllManufacturerListQueryResponse();
-                var cache = new CacheProvider<GetAllManufacturerListQueryRequest, GetAllManufacturerListQueryResponse>();
                 Func<GetAllManufacturerListQueryRequest, GetAllManufacturerListQueryResponse> getAllManufacturer = GetAllManufacturerFromDB;
                 result = _cacheProvider.Fetch(cacheKey, request, getAllManufacturer, null, TimeSpan.FromHours(4));
                 return result;
