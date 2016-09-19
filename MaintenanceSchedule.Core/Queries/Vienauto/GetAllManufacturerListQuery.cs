@@ -13,15 +13,34 @@ namespace MaintenanceSchedule.Core.Queries.Vienauto
 
     public class GetAllManufacturerListQuery : IGetAllManufacturerListQuery
     {
+        private const string cacheKey = "ALL_MANUFACTURER_CACHE";
+
         private readonly IBaseRepository _repository;
-        private ICacheProvider<GetAllManufacturerListQueryRequest, GetAllManufacturerListQueryResponse> _cacheAllManufacture;
+        private ICacheProvider<GetAllManufacturerListQueryRequest, GetAllManufacturerListQueryResponse> _cacheProvider;
 
         public GetAllManufacturerListQuery(IBaseRepository repository)
         {
             _repository = repository;
+            _cacheProvider = new CacheProvider<GetAllManufacturerListQueryRequest, GetAllManufacturerListQueryResponse>();
         }
 
-        private GetAllManufacturerListQueryResponse getAllManufacture(GetAllManufacturerListQueryRequest request)
+        public GetAllManufacturerListQueryResponse Invoke(GetAllManufacturerListQueryRequest request)
+        {
+            try
+            {
+                var result = new GetAllManufacturerListQueryResponse();
+                var cache = new CacheProvider<GetAllManufacturerListQueryRequest, GetAllManufacturerListQueryResponse>();
+                Func<GetAllManufacturerListQueryRequest, GetAllManufacturerListQueryResponse> getAllManufacturer = GetAllManufacturerFromDB;
+                result = _cacheProvider.Fetch(cacheKey, request, getAllManufacturer, null, TimeSpan.FromHours(4));
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
+        private GetAllManufacturerListQueryResponse GetAllManufacturerFromDB(GetAllManufacturerListQueryRequest request)
         {
             try
             {
@@ -45,23 +64,6 @@ namespace MaintenanceSchedule.Core.Queries.Vienauto
                     Exception = ex,
                     ResponseStatus = GetAllManufacturerStatus.Fail
                 };
-            }
-        }
-
-        public GetAllManufacturerListQueryResponse Invoke(GetAllManufacturerListQueryRequest request)
-        {
-            try
-            {
-                var result = new GetAllManufacturerListQueryResponse();
-                var cache = new CacheProvider<GetAllManufacturerListQueryRequest, GetAllManufacturerListQueryResponse>();
-                _cacheAllManufacture = (ICacheProvider<GetAllManufacturerListQueryRequest, GetAllManufacturerListQueryResponse>)cache;
-                Func<GetAllManufacturerListQueryRequest, GetAllManufacturerListQueryResponse> delegateGetAllManufacture = getAllManufacture;
-                result = _cacheAllManufacture.Fetch("allManufacture", request, delegateGetAllManufacture, DateTime.Now.AddHours(4), null);
-                return result;
-            }
-            catch (Exception ex)
-            {
-                return null;
             }
         }
     }

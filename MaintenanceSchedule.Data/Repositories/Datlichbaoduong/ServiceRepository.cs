@@ -23,33 +23,22 @@ namespace MaintenanceSchedule.Data.Repositories.Datlichbaoduong
 
     public class ServiceRepository : BaseRepository, IServiceRepository
     {
-        private ICacheProvider<Paging, PagingResult<Service>> _cacheListService;
-        private ICacheProvider<Int32, Service> _cacheService;
-                
-        private Service _getService(Int32 serviceId)
-        {
-            try
-            {
-                using (var session = GetSession())
-                {
-                    return Get<Service>(serviceId);
-                }
-            }
-            catch (Exception ex)
-            {
-                return null;
-            }
-        }
+        private readonly ICacheProvider<int, Service> _cacheService;
+        private readonly ICacheProvider<Paging, PagingResult<Service>> _cacheListService;
 
+        public ServiceRepository()
+        {
+            _cacheService = new CacheProvider<int, Service>();
+            _cacheListService = new CacheProvider<Paging, PagingResult<Service>>();
+        }
+               
         public Service GetService(int serviceId)
         {
             try
             {
                 var result = new Service();
-                var cache = new CacheProvider<Int32, Service>();
-                _cacheService = (ICacheProvider<Int32, Service>)cache;
-                Func<Int32, Service> delegateGetService = _getService;
-                result = _cacheService.Fetch(serviceId.ToString(), serviceId, delegateGetService, DateTime.Now.AddHours(4), null);
+                Func<int, Service> getService = GetServiceFromDB;
+                result = _cacheService.Fetch(serviceId.ToString(), serviceId, getService, null, TimeSpan.FromHours(4));
                 return result;
             }
             catch(Exception ex)
@@ -107,39 +96,13 @@ namespace MaintenanceSchedule.Data.Repositories.Datlichbaoduong
             }
         }
 
-        private PagingResult<Service> _getListService(Paging paging)
-        {
-            var result = new PagingResult<Service>();
-
-            try
-            {
-                using (var session = GetSession())
-                {                    
-                    var query = session.QueryOver<Service>();
-                    var items = query.Skip(paging.Index * paging.Size)
-                                       .Take(paging.Size)
-                                       .List();
-                    var count = query.RowCount();
-                    result.Items = items;
-                    result.TotalCount = count;
-                }
-            }
-            catch (Exception ex)
-            {
-                result.Error = ex;
-            }
-            return result;
-        }
-
         public PagingResult<Service> ListServices(Paging paging) 
         {
             try
             {
                 var result = new PagingResult<Service>();
-                Func<Paging, PagingResult<Service>> delegateGetListSer = _getListService;
-                var cache = new CacheProvider<Paging, PagingResult<Service>>();
-                _cacheListService = (ICacheProvider<Paging, PagingResult<Service>>)cache;                
-                result = _cacheListService.Fetch(paging.Index.ToString(), paging, delegateGetListSer, DateTime.Now.AddHours(4), null);
+                Func<Paging, PagingResult<Service>> getListService = GetListServiceFromDB;
+                result = _cacheListService.Fetch(paging.Index.ToString(), paging, getListService, null, TimeSpan.FromHours(4));
                 return result;
             }
             catch(Exception ex)
@@ -166,6 +129,30 @@ namespace MaintenanceSchedule.Data.Repositories.Datlichbaoduong
             {
                 return null;
             }
+        }
+
+        private Service GetServiceFromDB(int serviceId)
+        {
+            using (var session = GetSession())
+            {
+                return Get<Service>(serviceId);
+            }
+        }
+
+        private PagingResult<Service> GetListServiceFromDB(Paging paging)
+        {
+            var result = new PagingResult<Service>();
+            using (var session = GetSession())
+            {
+                var query = session.QueryOver<Service>();
+                var items = query.Skip(paging.Index * paging.Size)
+                                   .Take(paging.Size)
+                                   .List();
+                var count = query.RowCount();
+                result.Items = items;
+                result.TotalCount = count;
+            }
+            return result;
         }
     }
 }
