@@ -1,0 +1,4 @@
+D:\MyJobs\Web\maintenanceschedule\MaintenanceSchedule.Entity\bin\Debug\MaintenanceSchedule.Entity.dll
+D:\MyJobs\Web\maintenanceschedule\MaintenanceSchedule.Entity\bin\Debug\MaintenanceSchedule.Entity.pdb
+D:\MyJobs\Web\maintenanceschedule\MaintenanceSchedule.Entity\obj\Debug\MaintenanceSchedule.Entity.dll
+D:\MyJobs\Web\maintenanceschedule\MaintenanceSchedule.Entity\obj\Debug\MaintenanceSchedule.Entity.pdb

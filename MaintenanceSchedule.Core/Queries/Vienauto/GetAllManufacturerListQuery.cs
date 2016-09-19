@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using yellowx.Framework.UnitWork;
 using MaintenanceSchedule.Core.Web.Data;
 using MaintenanceSchedule.Entity.Vienauto;
-
+using MaintenanceSchedule.Library.Data.Caching;
 
 namespace MaintenanceSchedule.Core.Queries.Vienauto
 {
@@ -14,13 +14,14 @@ namespace MaintenanceSchedule.Core.Queries.Vienauto
     public class GetAllManufacturerListQuery : IGetAllManufacturerListQuery
     {
         private readonly IBaseRepository _repository;
+        private ICacheProvider<GetAllManufacturerListQueryRequest, GetAllManufacturerListQueryResponse> _cacheAllManufacture;
 
         public GetAllManufacturerListQuery(IBaseRepository repository)
         {
             _repository = repository;
         }
 
-        public GetAllManufacturerListQueryResponse Invoke(GetAllManufacturerListQueryRequest request)
+        private GetAllManufacturerListQueryResponse getAllManufacture(GetAllManufacturerListQueryRequest request)
         {
             try
             {
@@ -44,6 +45,23 @@ namespace MaintenanceSchedule.Core.Queries.Vienauto
                     Exception = ex,
                     ResponseStatus = GetAllManufacturerStatus.Fail
                 };
+            }
+        }
+
+        public GetAllManufacturerListQueryResponse Invoke(GetAllManufacturerListQueryRequest request)
+        {
+            try
+            {
+                var result = new GetAllManufacturerListQueryResponse();
+                var cache = new CacheProvider<GetAllManufacturerListQueryRequest, GetAllManufacturerListQueryResponse>();
+                _cacheAllManufacture = (ICacheProvider<GetAllManufacturerListQueryRequest, GetAllManufacturerListQueryResponse>)cache;
+                Func<GetAllManufacturerListQueryRequest, GetAllManufacturerListQueryResponse> delegateGetAllManufacture = getAllManufacture;
+                result = _cacheAllManufacture.Fetch("allManufacture", request, delegateGetAllManufacture, DateTime.Now.AddHours(4), null);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return null;
             }
         }
     }

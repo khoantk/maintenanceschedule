@@ -8,7 +8,7 @@ using System.Web.Mvc;
 using System.Drawing;
 using System.Web.UI.WebControls;
 using System.Collections.Specialized;
-using MaintenanceSchedule.Web.Filters;
+//using MaintenanceSchedule.Web.Filters;
 using MaintenanceSchedule.Library.Utilities;
 using MaintenanceSchedule.Web.Areas.Admin.Models;
 using MaintenanceSchedule.Core.Common.Configuration;
@@ -19,7 +19,7 @@ using System.Collections.Generic;
 
 namespace MaintenanceSchedule.Web.Areas.Admin.Controllers
 {
-    [Authentication]
+    //[Authentication]
     public class ServiceController : AdminController
     {
         private readonly IDeleteServiceCommand _deleteServiceCommand;

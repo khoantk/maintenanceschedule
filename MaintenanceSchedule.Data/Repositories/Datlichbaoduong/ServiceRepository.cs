@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using yellowx.Framework.Data.Paging;
 using MaintenanceSchedule.Entity.Datlichbaoduong;
+using MaintenanceSchedule.Library.Data.Caching;
 
 namespace MaintenanceSchedule.Data.Repositories.Datlichbaoduong
 {
@@ -22,7 +23,10 @@ namespace MaintenanceSchedule.Data.Repositories.Datlichbaoduong
 
     public class ServiceRepository : BaseRepository, IServiceRepository
     {
-        public Service GetService(int serviceId)
+        private ICacheProvider<Paging, PagingResult<Service>> _cacheListService;
+        private ICacheProvider<Int32, Service> _cacheService;
+                
+        private Service _getService(Int32 serviceId)
         {
             try
             {
@@ -32,6 +36,23 @@ namespace MaintenanceSchedule.Data.Repositories.Datlichbaoduong
                 }
             }
             catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
+        public Service GetService(int serviceId)
+        {
+            try
+            {
+                var result = new Service();
+                var cache = new CacheProvider<Int32, Service>();
+                _cacheService = (ICacheProvider<Int32, Service>)cache;
+                Func<Int32, Service> delegateGetService = _getService;
+                result = _cacheService.Fetch(serviceId.ToString(), serviceId, delegateGetService, DateTime.Now.AddHours(4), null);
+                return result;
+            }
+            catch(Exception ex)
             {
                 return null;
             }
@@ -58,7 +79,8 @@ namespace MaintenanceSchedule.Data.Repositories.Datlichbaoduong
             {
                 using (var session = GetSession())
                 {
-                    return Last<Service>(s => s.Id > serviceId);
+                    //return Last<Service>(s => s.Id > serviceId);
+                    return List<Service>(s => s.Id < serviceId).OrderByDescending(s => s.Id).FirstOrDefault();
                 }
             }
             catch (Exception ex)
@@ -85,14 +107,14 @@ namespace MaintenanceSchedule.Data.Repositories.Datlichbaoduong
             }
         }
 
-        public PagingResult<Service> ListServices(Paging paging)
+        private PagingResult<Service> _getListService(Paging paging)
         {
             var result = new PagingResult<Service>();
 
             try
             {
                 using (var session = GetSession())
-                {
+                {                    
                     var query = session.QueryOver<Service>();
                     var items = query.Skip(paging.Index * paging.Size)
                                        .Take(paging.Size)
@@ -107,6 +129,23 @@ namespace MaintenanceSchedule.Data.Repositories.Datlichbaoduong
                 result.Error = ex;
             }
             return result;
+        }
+
+        public PagingResult<Service> ListServices(Paging paging) 
+        {
+            try
+            {
+                var result = new PagingResult<Service>();
+                Func<Paging, PagingResult<Service>> delegateGetListSer = _getListService;
+                var cache = new CacheProvider<Paging, PagingResult<Service>>();
+                _cacheListService = (ICacheProvider<Paging, PagingResult<Service>>)cache;                
+                result = _cacheListService.Fetch(paging.Index.ToString(), paging, delegateGetListSer, DateTime.Now.AddHours(4), null);
+                return result;
+            }
+            catch(Exception ex)
+            {
+                return null;
+            }
         }
 
         public Dictionary<int, IList<Service>> ListAdminServices(int pageIndex, int pageSize)

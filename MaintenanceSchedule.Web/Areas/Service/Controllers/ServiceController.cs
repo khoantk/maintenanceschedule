@@ -20,7 +20,7 @@ namespace MaintenanceSchedule.Web.Areas.Service.Controllers
         private readonly IServiceQuery _serviceQuery;
         private readonly IGetYearListQuery _getYear;
         private readonly IGetModelListQuery _getModel;
-        private readonly IGetAllManufacturerListQuery _allManufactureQuery;
+        private readonly IGetAllManufacturerListQuery _allManufactureQuery;        
         
         public ServiceController(IServiceQuery serviceQuery, IGetAllManufacturerListQuery allManufactureQuery,
                                  IGetModelListQuery getModel, IGetYearListQuery getYear)
@@ -111,11 +111,16 @@ namespace MaintenanceSchedule.Web.Areas.Service.Controllers
             return RedirectToRoute("Default");
         }
 
+        private PagingResult<MaintenanceSchedule.Entity.Datlichbaoduong.Service> getListService(Paging paging)
+        {
+            return _serviceQuery.GetServices(paging);
+        }
+
         public ActionResult GetServices(int index, int size)
         {
             PagingResult<MaintenanceSchedule.Entity.Datlichbaoduong.Service> result;
 
-            var paging = new Paging { Index = index, Size = size };
+            var paging = new Paging { Index = index, Size = size };            
             result = _serviceQuery.GetServices(paging);
 
             var totalPages = Convert.ToInt32(Math.Ceiling(result.TotalCount * 1.0 / size));

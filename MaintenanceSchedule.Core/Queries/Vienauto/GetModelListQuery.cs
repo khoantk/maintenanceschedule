@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using MaintenanceSchedule.Core.Web.Data;
 using MaintenanceSchedule.Entity.Vienauto;
 using MaintenanceSchedule.Core.Queries.Vienauto.Dto;
+using MaintenanceSchedule.Library.Data.Caching;
 
 namespace MaintenanceSchedule.Core.Queries.Vienauto
 {
@@ -15,13 +16,14 @@ namespace MaintenanceSchedule.Core.Queries.Vienauto
     public class GetModelListQuery : IGetModelListQuery
     {
         private readonly IBaseRepository _repository;
+        private ICacheProvider<GetModelListQueryRequest, GetModelListQueryResponse> _cacheModelList;
 
         public GetModelListQuery(IBaseRepository repository)
         {
             _repository = repository;
         }
 
-        public GetModelListQueryResponse Invoke(GetModelListQueryRequest request)
+        private GetModelListQueryResponse getModelByManufacture(GetModelListQueryRequest request)
         {
             try
             {
@@ -41,7 +43,7 @@ namespace MaintenanceSchedule.Core.Queries.Vienauto
                                         .SelectGroup(() => modelAlias.Name).WithAlias(() => modelDto.ModelName))
                                   .TransformUsing(Transformers.AliasToBean<ModelDto>())
                                   .List<ModelDto>();
-                    
+
                     var models = new List<Model>();
                     foreach (var dto in modelDtos)
                         models.Add(dto.ToModel());
@@ -60,6 +62,23 @@ namespace MaintenanceSchedule.Core.Queries.Vienauto
                     Exception = ex,
                     ResponseStatus = GetModelStatus.Fail
                 };
+            }
+        }
+
+        public GetModelListQueryResponse Invoke(GetModelListQueryRequest request)
+        {
+            try
+            {
+                var result = new GetModelListQueryResponse();
+                var cache = new CacheProvider<GetModelListQueryRequest, GetModelListQueryResponse>();
+                _cacheModelList = (ICacheProvider<GetModelListQueryRequest, GetModelListQueryResponse>)cache;
+                Func<GetModelListQueryRequest, GetModelListQueryResponse> delegateGetModelList = getModelByManufacture;
+                result = _cacheModelList.Fetch(request.ManufacturerId.ToString(), request, delegateGetModelList, DateTime.Now.AddHours(4), null);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return null;
             }
         }
     }

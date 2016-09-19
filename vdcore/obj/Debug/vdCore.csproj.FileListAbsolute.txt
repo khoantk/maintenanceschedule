@@ -1,0 +1,5 @@
+D:\MyJobs\Web\maintenanceschedule\vdcore\bin\Debug\vdCore.dll
+D:\MyJobs\Web\maintenanceschedule\vdcore\bin\Debug\vdCore.pdb
+D:\MyJobs\Web\maintenanceschedule\vdcore\obj\Debug\vdCore.csprojResolveAssemblyReference.cache
+D:\MyJobs\Web\maintenanceschedule\vdcore\obj\Debug\vdCore.dll
+D:\MyJobs\Web\maintenanceschedule\vdcore\obj\Debug\vdCore.pdb
