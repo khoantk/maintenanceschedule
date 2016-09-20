@@ -16,14 +16,15 @@ namespace MaintenanceSchedule.Core.Queries.Vienauto
     public class GetYearListQuery : IGetYearListQuery
     {
         private readonly IBaseRepository _repository;
-        private ICacheProvider<GetYearListQueryRequest, GetYearListQueryResponse> _cacheYearList;
+        private ICacheProvider<GetYearListQueryRequest, GetYearListQueryResponse> _cacheProvider;
 
         public GetYearListQuery(IBaseRepository repository)
         {
             _repository = repository;
+            _cacheProvider = new CacheProvider<GetYearListQueryRequest, GetYearListQueryResponse>();
         }
 
-        private GetYearListQueryResponse getYearByModel(GetYearListQueryRequest request)
+        private GetYearListQueryResponse getYearByModelFromDB(GetYearListQueryRequest request)
         {
             try
             {
@@ -67,11 +68,9 @@ namespace MaintenanceSchedule.Core.Queries.Vienauto
         {
             try
             {
-                var result = new GetYearListQueryResponse();
-                var cache = new CacheProvider<GetYearListQueryRequest, GetYearListQueryResponse>();
-                _cacheYearList = (ICacheProvider<GetYearListQueryRequest, GetYearListQueryResponse>)cache;
-                Func<GetYearListQueryRequest, GetYearListQueryResponse> delegateGetYearList = getYearByModel;
-                result = _cacheYearList.Fetch(request.ModelId.ToString(), request, delegateGetYearList, DateTime.Now.AddHours(4), null);
+                var result = new GetYearListQueryResponse();                
+                Func<GetYearListQueryRequest, GetYearListQueryResponse> getYear = getYearByModelFromDB;
+                result = _cacheProvider.Fetch(request.ModelId.ToString(), request, getYear, null, TimeSpan.FromHours(4));
                 return result;
             }
             catch(Exception ex)

@@ -77,6 +77,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data\Caching\CacheProvider.cs" />
+    <Compile Include="Data\Caching\CacheProviderExtend.cs" />
     <Compile Include="Data\NHibernate\SessionAttribute.cs" />
     <Compile Include="Data\NHibernate\SessionFactory.cs" />
     <Compile Include="Data\NHibernate\Repository.cs" />

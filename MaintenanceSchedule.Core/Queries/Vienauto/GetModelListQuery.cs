@@ -30,7 +30,7 @@ namespace MaintenanceSchedule.Core.Queries.Vienauto
             {
                 var result = new GetModelListQueryResponse();
                 Func<GetModelListQueryRequest, GetModelListQueryResponse> getModel = GetModelByManufacturerFromDB;
-                result = _cacheProvider.Fetch(request.ManufacturerId.ToString(), request, getModel, DateTime.Now.AddHours(4), null);
+                result = _cacheProvider.Fetch(request.ManufacturerId.ToString(), request, getModel, null, TimeSpan.FromHours(4));
                 return result;
             }
             catch (Exception ex)
